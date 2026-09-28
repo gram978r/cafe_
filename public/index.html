@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PREP CAFE · 운영 분석 시스템</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main id="loginView" class="login-shell">
+    <section class="login-card" aria-labelledby="loginTitle">
+      <div class="brand-mark">☕</div>
+      <p class="eyebrow">PREP CAFE · OPERATIONS</p>
+      <h1 id="loginTitle">운영 분석 시스템</h1>
+      <p class="muted">저장된 프렙 카페 매장 자료를 조회하려면 운영자로 접속하세요.</p>
+      <form id="loginForm" class="stack">
+        <label>운영자 이메일<input id="email" name="email" type="email" value="operator@prepcafe.local" autocomplete="username" required></label>
+        <label>비밀번호<input id="password" name="password" type="password" value="prep-cafe-demo" autocomplete="current-password" required></label>
+        <button class="primary-button" type="submit">운영 자료 열기</button>
+        <p id="loginError" class="error-message" role="alert" hidden></p>
+      </form>
+      <p class="demo-hint">데모 운영자: <code>operator@prepcafe.local</code> / <code>prep-cafe-demo</code></p>
+    </section>
+  </main>
+
+  <div id="appView" class="app-shell" hidden>
+    <aside class="sidebar">
+      <div>
+        <div class="brand"><div class="brand-mark small">☕</div><div><strong>PREP CAFE</strong><span>운영 분석 시스템</span></div></div>
+        <div class="store-card"><div class="store-card-top"><span>선택 매장</span><b>● 영업 마감</b></div><strong>프렙 카페 본점</strong><span>▣ <span id="storeAsOf"></span></span></div>
+        <nav class="nav-list" aria-label="주 메뉴">
+          <button class="nav-item active" data-view="sales" type="button"><span>▤</span>판매 기록 관리</button>
+          <button class="nav-item" data-view="performance" type="button"><span>⌁</span>일·주·월 실적 조회</button>
+          <button class="nav-item" data-view="profitability" type="button"><span>↗</span>메뉴별 변동 수익성</button>
+          <button class="nav-item" data-view="inventory" type="button"><span>▣</span>실제 손익 및 재료 잔량</button>
+        </nav>
+      </div>
+      <div class="sidebar-bottom"><div class="notice"><strong>안내 모드</strong><span>※ 본 환경은 가상 운영 데이터 기반 시뮬레이션입니다.</span></div><div class="profile"><div><strong>김대표 점주</strong><span>운영 관리자</span></div><button id="logoutButton" type="button" aria-label="로그아웃">↪</button></div></div>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar"><div><strong>가상 매장 (프렙 카페 본점)</strong><span class="status-pill">● 영업일: <span id="headerAsOf"></span> (마감 완료)</span></div><div class="user-chip"><span>프렙 본점</span><small>마감 장부 확인</small></div></header>
+      <nav class="mobile-nav" aria-label="모바일 주 메뉴"><button class="nav-item active" data-view="sales" type="button">판매 기록</button><button class="nav-item" data-view="performance" type="button">실적 조회</button><button class="nav-item" data-view="profitability" type="button">수익성</button><button class="nav-item" data-view="inventory" type="button">손익·재고</button></nav>
+      <div class="content">
+        <div class="info-banner"><span>ⓘ</span><span>본 데이터는 가상 예시 기록이며, 판매 기록은 개별 영수증 주문 건수가 아닌 <strong>일자·메뉴·채널별 일일 집계 기록</strong>입니다.</span><span class="banner-tag">SERVER DATA</span></div>
+        <div class="page-heading"><div><p class="eyebrow">POS & CHANNEL RECONCILIATION · SAVED STORE DATA</p><h1>판매 기록 관리 <small>(Daily Sales Log)</small></h1></div><div class="summary-cards"><div class="summary-card"><span>당일 총 집계 수량</span><strong id="totalQuantity">-</strong><em>잔</em></div><div class="summary-card green"><span>집계 순매출 합계</span><strong id="totalSales">-</strong><em>원</em></div><div class="summary-card"><span>적용 평균 원가율</span><strong id="costRate">-</strong><em>%</em></div></div></div>
+        <section class="filter-panel" aria-label="판매 기록 필터"><label class="date-field">집계일자<input id="dateFilter" type="date"></label><div class="channel-tabs" role="group" aria-label="판매 채널"><button class="channel active" data-channel="전체" type="button">전체 채널</button><button class="channel" data-channel="매장" type="button">매장 (홀)</button><button class="channel" data-channel="포장" type="button">포장 (To-Go)</button><button class="channel" data-channel="배달" type="button">배달 (Delivery)</button></div><label class="search-field">⌕<input id="searchFilter" type="search" placeholder="메뉴명 검색"></label><button id="refreshButton" class="secondary-button" type="button">↻ 새로고침</button><button id="newSaleButton" class="primary-button compact" type="button">＋ 신규 판매 기록</button></section>
+        <section class="data-section"><div class="section-heading"><div><h2>일자별 메뉴 집계 내역 <span id="rowCount" class="count-badge">불러오는 중</span></h2><p id="loadState" class="muted">서버 저장 자료를 조회하는 중입니다.</p></div><div class="legend"><span>● 서버 저장 자료</span><span>● 원본 ID 연결</span></div></div><div class="table-wrap"><table><thead><tr><th>판매일자</th><th>메뉴명</th><th>판매채널</th><th class="right">판매수량</th><th class="right">정가(단가)</th><th class="right">할인금액</th><th class="right">순매출액</th><th class="right">원본 ID</th><th class="right">관리</th></tr></thead><tbody id="salesBody"></tbody></table><div id="emptyState" class="empty-state" hidden>선택한 조건에 해당하는 판매 기록이 없습니다.</div></div></section>
+        <section class="data-proof"><div><span class="proof-icon">✓</span><div><strong>실제 저장 자료 연결됨</strong><p>화면에 고정한 임시 배열이 아니라 서버가 원본 JSON 자료에서 매번 읽습니다.</p></div></div><div class="proof-stats"><span>메뉴 <b id="menuCount">-</b>개</span><span>판매 기록 <b id="salesCount">-</b>건</span><span>재료 <b id="materialCount">-</b>종</span><span>레시피 <b id="recipeCount">-</b>건</span></div></section>
+
+        <section id="performanceView" class="performance-view" hidden>
+          <div class="page-heading performance-heading"><div><p class="eyebrow">PERFORMANCE LEDGER · PERIOD SUMMARY</p><h1>일·주·월 실적 조회 <small>(Performance)</small></h1><p id="performanceStatus" class="muted">저장된 판매 기록을 기간별로 다시 집계합니다.</p></div></div>
+          <section class="period-panel"><div class="period-tabs" role="group" aria-label="조회 기간"><button class="period-tab active" data-period="day" type="button">일간</button><button class="period-tab" data-period="week" type="button">주간</button><button class="period-tab" data-period="month" type="button">월간</button></div><label class="date-field">기준일<input id="performanceDate" type="date"></label><button id="previousPeriod" class="secondary-button" type="button">‹ 이전</button><button id="nextPeriod" class="secondary-button" type="button">다음 ›</button><button id="todayPeriod" class="secondary-button" type="button">기준일로</button></section>
+          <div class="period-range"><strong id="performanceRange">-</strong><span id="completionBadge" class="completion-badge">-</span></div>
+          <div class="performance-cards"><div class="summary-card"><span>선택 기간 판매 수량</span><strong id="performanceQuantity">-</strong><em>잔</em></div><div class="summary-card green"><span>선택 기간 순매출</span><strong id="performanceSales">-</strong><em>원</em></div><div class="summary-card"><span>판매 집계 기록</span><strong id="performanceRecords">-</strong><em>건</em></div><div class="summary-card"><span>할인 적용액</span><strong id="performanceDiscount">-</strong><em>원</em></div></div>
+          <section class="data-section performance-section"><div class="section-heading"><div><h2>일자별 매출 추이 및 기간 현황</h2><p class="muted">마감 전 영업일은 0원으로 확정하지 않고 미마감으로 표시합니다.</p></div></div><div class="table-wrap"><table><thead><tr><th>일자</th><th>상태</th><th class="right">판매수량</th><th class="right">순매출</th><th>메모</th></tr></thead><tbody id="dailyPerformanceBody"></tbody></table></div></section>
+          <section class="data-section performance-section"><div class="section-heading"><div><h2>메뉴별 기간 실적</h2><p class="muted">판매 기록과 같은 저장 원본을 사용합니다.</p></div></div><div class="table-wrap"><table><thead><tr><th>메뉴명</th><th class="right">판매수량</th><th class="right">순매출</th></tr></thead><tbody id="menuPerformanceBody"></tbody></table></div></section>
+        </section>
+        <section id="profitabilityView" class="epic3-view" hidden>
+          <div class="page-heading performance-heading"><div><p class="eyebrow">CONTRIBUTION MARGIN · SNAPSHOT COST</p><h1>메뉴별 변동 수익성 <small>(Profitability)</small></h1><p id="profitabilityStatus" class="muted">판매 당시 원가 스냅샷과 수수료로 계산합니다.</p></div></div>
+          <section class="period-panel"><div class="period-tabs" role="group" aria-label="수익성 기간"><button class="profit-period-tab active" data-period="day" type="button">일간</button><button class="profit-period-tab" data-period="week" type="button">주간</button><button class="profit-period-tab" data-period="month" type="button">월간</button></div><label class="date-field">기준일<input id="profitabilityDate" type="date"></label><select id="profitabilityChannel" class="report-select"><option value="전체">전체 채널</option><option value="매장">매장 (홀)</option><option value="포장">포장 (To-Go)</option><option value="배달">배달 (Delivery)</option></select></section>
+          <div class="performance-cards"><div class="summary-card"><span>순매출</span><strong id="profitabilitySales">-</strong><em>원</em></div><div class="summary-card"><span>변동비 합계</span><strong id="profitabilityVariable">-</strong><em>원</em></div><div class="summary-card green"><span>변동 수익</span><strong id="profitabilityContribution">-</strong><em>원</em></div><div class="summary-card"><span>공헌이익률</span><strong id="profitabilityMargin">-</strong><em>%</em></div></div>
+          <section class="data-section performance-section"><div class="section-heading"><div><h2>메뉴별 변동 수익성 상세 원장</h2><p class="muted">고정비는 메뉴별로 배분하지 않습니다. 포장 원가는 포장 판매에만 반영됩니다.</p></div></div><div class="table-wrap"><table><thead><tr><th>메뉴명</th><th class="right">판매수량</th><th class="right">순매출</th><th class="right">식재료비</th><th class="right">포장비</th><th class="right">결제수수료</th><th class="right">변동 수익</th><th>상태</th></tr></thead><tbody id="profitabilityBody"></tbody></table></div></section>
+        </section>
+        <section id="inventoryView" class="epic3-view" hidden>
+          <div class="page-heading performance-heading"><div><p class="eyebrow">ACTUAL P&L · MATERIAL AUDIT</p><h1>실제 손익 및 재료 잔량 <small>(P&amp;L / Inventory)</small></h1><p id="pnlStatus" class="muted">실제 비용기록과 레시피 기반 재고를 함께 확인합니다.</p></div></div>
+          <section class="period-panel"><div class="period-tabs" role="group" aria-label="손익 기간"><button class="pnl-period-tab active" data-period="day" type="button">일간</button><button class="pnl-period-tab" data-period="week" type="button">주간</button><button class="pnl-period-tab" data-period="month" type="button">월간</button></div><label class="date-field">기준일<input id="pnlDate" type="date"></label></section>
+          <div class="performance-cards"><div class="summary-card"><span>순매출</span><strong id="pnlSales">-</strong><em>원</em></div><div class="summary-card"><span>변동비</span><strong id="pnlVariable">-</strong><em>원</em></div><div class="summary-card"><span>실제 비용</span><strong id="pnlExpenses">-</strong><em>원</em></div><div class="summary-card green"><span>최종 실제 영업이익</span><strong id="pnlProfit">-</strong><em>원</em></div></div>
+          <section class="data-section performance-section"><div class="section-heading"><div><h2>실제 발생 비용 상세</h2><p id="pnlExpenseNote" class="muted">월별 비용 계획은 실제 손익에 중복 합산하지 않습니다.</p></div></div><div class="expense-grid" id="expenseBody"></div></section>
+          <section class="data-section performance-section"><div class="section-heading"><div><h2>11종 재료 잔량 및 실사 대조표</h2><p class="muted">g·ml·개 단위는 서로 합산하지 않고 재료별로 계산합니다.</p></div><div class="inventory-tabs"><button class="inventory-filter active" data-inventory-filter="all" type="button">전체</button><button class="inventory-filter" data-inventory-filter="mismatch" type="button">차이 있음</button><button class="inventory-filter" data-inventory-filter="normal" type="button">정상 일치</button></div></div><div class="table-wrap"><table><thead><tr><th>재료명</th><th>단위</th><th class="right">기초 재고</th><th class="right">입고</th><th class="right">폐기</th><th class="right">판매 사용</th><th class="right">계산 잔량</th><th class="right">최근 실사</th><th class="right">차이</th><th>상태</th></tr></thead><tbody id="inventoryBody"></tbody></table></div></section>
+        </section>
+        <footer>분석 대상 기간: <strong id="periodText"></strong><span>통화 단위: KRW (₩) · 모든 금액은 부가세 별도 기준</span></footer>
+      </div>
+    </section>
+  </div>
+  <div id="saleModal" class="modal-backdrop" hidden><section class="sale-modal" role="dialog" aria-modal="true" aria-labelledby="saleModalTitle"><div class="modal-header"><div><p class="eyebrow">SAVED SALES RECORD</p><h2 id="saleModalTitle">신규 판매 기록 입력</h2></div><button id="closeSaleModal" class="icon-button" type="button" aria-label="닫기">×</button></div><form id="saleForm" class="sale-form"><input id="saleId" type="hidden"><label>판매 일자<input id="saleDate" type="date" required></label><label>메뉴<select id="saleMenu" required></select></label><label>판매 채널<select id="saleChannel" required><option value="매장">매장 (홀)</option><option value="포장">포장 (To-Go)</option><option value="배달">배달 (Delivery)</option></select></label><label>판매 수량<input id="saleQuantity" type="number" min="1" step="1" required></label><label>단가(원)<input id="saleUnitPrice" type="number" min="0" step="1" required></label><label>할인 금액(원)<input id="saleDiscount" type="number" min="0" step="1" value="0" required></label><div class="sale-total"><span>예상 순매출</span><strong id="saleNetSales">₩0</strong><small id="saleCalculation">수량 × 단가 - 할인</small></div><p id="saleFormError" class="error-message" role="alert" hidden></p><div class="modal-actions"><button id="cancelSale" class="secondary-button" type="button">취소</button><button class="primary-button" type="submit">저장하기</button></div></form></section></div>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "prep-cafe-operations",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/epic1.test.js tests/epic2.test.js tests/epic3.test.js"
+  }
+}
