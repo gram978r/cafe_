@@ -6,7 +6,8 @@ const crypto = require('node:crypto');
 const PORT = Number(process.env.PORT || 4173);
 const HOST = process.env.HOST || '127.0.0.1';
 const DATA_PATH = path.join(__dirname, 'codex', '매장운영데이터.json');
-const RUNTIME_STORE_PATH = process.env.PREP_STORE_PATH || path.join(__dirname, 'data', 'prep-cafe-store.json');
+const RUNTIME_STORE_PATH = process.env.PREP_STORE_PATH
+  || (process.env.VERCEL ? path.join('/tmp', 'prep-cafe-store.json') : path.join(__dirname, 'data', 'prep-cafe-store.json'));
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const sessions = new Map();
 
@@ -420,4 +421,16 @@ if (require.main === module) {
   createServer().listen(PORT, HOST, () => console.log(`Prep Cafe server listening at http://${HOST}:${PORT}`));
 }
 
-module.exports = { createServer, buildStorePayload, buildPerformancePayload, buildProfitabilityPayload, buildPnlPayload, buildInventoryPayload, loadDataset, validateSale };
+const vercelServer = createServer();
+const vercelHandler = (req, res) => vercelServer.emit('request', req, res);
+
+module.exports = Object.assign(vercelHandler, {
+  createServer,
+  buildStorePayload,
+  buildPerformancePayload,
+  buildProfitabilityPayload,
+  buildPnlPayload,
+  buildInventoryPayload,
+  loadDataset,
+  validateSale,
+});
